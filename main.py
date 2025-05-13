@@ -22,14 +22,14 @@ class Main():
         #player
         self.movement = [0,0,0,0]
         self.scroll = [0,0]
-        self.player = Body(self,[0,0], [16,16])
+        self.player = Body(self,[0,0],(32,32))
 
 
         #game assets
         self.assets = {'ground/ground': load_images('tiles'),
                       }
 
-        self.tilemap = Tilemap(self)
+        self.tilemap = Tilemap(self, tilesize=32)
         self.load()
 
     def load(self):
@@ -84,8 +84,9 @@ class Main():
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
 
 
-            self.player.update(self.tilemap, [self.movement[1] - self.movement[0] , self.movement[3] - self.movement[2]])
+            self.player.update(self.tilemap, (self.movement[1] - self.movement[0] , self.movement[3] - self.movement[2]))
             self.player.render(self.display, render_scroll)
+            print(self.player.collisions)
                     
 
 
