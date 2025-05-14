@@ -65,7 +65,7 @@ class Player(Body):
     def __init__(self, game, pos, size):
         super().__init__(game, pos, size)
         self.hp = 0
-        self.status = 'player'
+        self.status = 'player_head'
 
     def update(self, tilemap, movement, offset=(0, 0)):
         player_rect = self.rect()
@@ -74,16 +74,29 @@ class Player(Body):
             if player_rect.colliderect(enemy.rect()):
                 enemy.hp-=1
 
-                if  self.status == 'head' and enemy.status =='corpse':
-                    print(enemy.type)
+                if enemy.status =='corpse':
+                    self.status = 'player_' + enemy.type
+                    print(self.status)
              
         return super().update(tilemap, movement, offset)
     
     def render(self, surf, color, offset=(0, 0)):
-        if self.hp <=0:
-            self.status = 'head'
+       
+        
+        if self.status == 'player_head':
             color = [75,155,120]
+        if self.status == 'player_zombie':
+            color = [75,120,155]
+        if self.status == 'player_skeleton':
+            color = [120,155, 75]
         return super().render(surf, color, offset)
+    
+    def attack(self, surf, offset = (0,0)):
+        attack_rect = pygame.rect.Rect(self.pos[0] , self.pos[1], self.size[0], self.size[1])
+        attack_display = pygame.surface.Surface((32,16))
+        attack_display.fill([0,255,52])
+        surf.blit(attack_display, (attack_rect[0]+ 32 - offset[0], attack_rect[1] - offset[1]))
+       
 
 class Enemy(Body):
     def __init__(self, game, pos, size, type):

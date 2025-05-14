@@ -74,6 +74,10 @@ class Main():
                     if event.key == pygame.K_s:
                         self.movement[3] = True
 
+                    if event.key == pygame.K_z:
+                        self.player.attack(self.display, self.scroll)
+                    
+
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:
                         self.movement[0] = False
