@@ -64,7 +64,7 @@ class Body(pygame.sprite.Sprite):
 class Player(Body):
     def __init__(self, game, pos, size):
         super().__init__(game, pos, size)
-        self.hp = 5
+        self.hp = 0
         self.status = 'player'
 
     def update(self, tilemap, movement, offset=(0, 0)):
@@ -73,7 +73,10 @@ class Player(Body):
         for enemy in self.game.enemies:
             if player_rect.colliderect(enemy.rect()):
                 enemy.hp-=1
-                self.hp-=1
+
+                if  self.status == 'head' and enemy.status =='corpse':
+                    print(enemy.type)
+             
         return super().update(tilemap, movement, offset)
     
     def render(self, surf, color, offset=(0, 0)):
@@ -83,15 +86,19 @@ class Player(Body):
         return super().render(surf, color, offset)
 
 class Enemy(Body):
-    def __init__(self, game, pos, size):
+    def __init__(self, game, pos, size, type):
         super().__init__(game, pos, size)
         self.hp = 5
         self.status = 'enemy'
+        self.type = type
+        
 
     def update(self, tilemap, movement, offset=(0, 0)):
         
-        print(self.status)
+  
         super().update(tilemap, movement, offset)
+        if self.hp == 0:
+            return 'kill'
         
     def render(self, surf, color, offset=(0, 0)):
         if self.hp <=0:

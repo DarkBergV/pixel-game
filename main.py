@@ -25,8 +25,8 @@ class Main():
         self.scroll = [0,0]
         self.player = Player(self,[0,0],(32,32))
 
-        self.enemy = Enemy(self, [200,0], (32,32))
-        self.enemy2 = Enemy(self, [100,0], (32,32))
+        self.enemy = Enemy(self, [200,0], (32,32), 'zombie')
+        self.enemy2 = Enemy(self, [100,0], (32,32), 'skeleton')
 
         self.corpse = Corpse(self, [100,0], (32,32))
 
@@ -96,15 +96,17 @@ class Main():
 
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0] , self.movement[3] - self.movement[2]))
             self.player.render(self.display, (255,75,25),render_scroll)
-            
-            for enemy in self.enemies:
-                status = enemy.update(self.tilemap, (0,0))
-                enemy.render(self.display,(0,22,200), self.scroll)
+
+            if len(self.enemies)>0: 
+                for enemy in self.enemies:
+                    status = enemy.update(self.tilemap, (0,0))
+                    enemy.render(self.display,(0,22,200), self.scroll)
+
+                    #if status == 'kill':
+                     #   self.enemies.remove(enemy)
                 
       
-            
-            print(len(self.corpses))
-
+  
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()),(0,0)) 
             pygame.display.update()
