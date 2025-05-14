@@ -53,9 +53,59 @@ class Body(pygame.sprite.Sprite):
       
 
 
-    def render(self, surf, offset = (0,0)):
-        self.display.fill((255,70,10))
+    def render(self, surf, color, offset = (0,0)):
+        self.display.fill(color)
         surf.blit(self.display, (self.pos[0] - offset[0], self.pos[1]-offset[1]))
 
     def rect(self):
         return pygame.rect.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
+    
+
+class Player(Body):
+    def __init__(self, game, pos, size):
+        super().__init__(game, pos, size)
+        self.hp = 5
+        self.status = 'player'
+
+    def update(self, tilemap, movement, offset=(0, 0)):
+        player_rect = self.rect()
+        
+        for enemy in self.game.enemies:
+            if player_rect.colliderect(enemy.rect()):
+                enemy.hp-=1
+                self.hp-=1
+        return super().update(tilemap, movement, offset)
+    
+    def render(self, surf, color, offset=(0, 0)):
+        if self.hp <=0:
+            self.status = 'head'
+            color = [75,155,120]
+        return super().render(surf, color, offset)
+
+class Enemy(Body):
+    def __init__(self, game, pos, size):
+        super().__init__(game, pos, size)
+        self.hp = 5
+        self.status = 'enemy'
+
+    def update(self, tilemap, movement, offset=(0, 0)):
+        
+        print(self.status)
+        super().update(tilemap, movement, offset)
+        
+    def render(self, surf, color, offset=(0, 0)):
+        if self.hp <=0:
+            self.status = 'corpse'
+            color = [0,0,0]
+        return super().render(surf, color, offset)
+    
+
+class Corpse(Body):
+    def __init__(self, game, pos, size):
+        super().__init__(game, pos, size)
+    def update(self, tilemap, movement, offset=(0, 0)):
+
+
+        return super().update(tilemap, movement, offset)
+    def render(self, surf, color, offset=(0, 0)):
+        return super().render(surf, color, offset)

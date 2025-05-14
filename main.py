@@ -1,13 +1,14 @@
 import pygame
 import sys
 #test
-from sprites import Body
+from sprites import Body, Player, Enemy, Corpse
 from tilemap import Tilemap
 from utils import load_images, load_image
 
 WIDTH = 640
 
 HEIGHT = 480
+
 
 
 class Main():
@@ -22,7 +23,16 @@ class Main():
         #player
         self.movement = [0,0,0,0]
         self.scroll = [0,0]
-        self.player = Body(self,[0,0],(32,32))
+        self.player = Player(self,[0,0],(32,32))
+
+        self.enemy = Enemy(self, [200,0], (32,32))
+        self.enemy2 = Enemy(self, [100,0], (32,32))
+
+        self.corpse = Corpse(self, [100,0], (32,32))
+
+        self.corpses = []
+
+        self.enemies = [self.enemy, self.enemy2]
 
 
         #game assets
@@ -85,9 +95,15 @@ class Main():
 
 
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0] , self.movement[3] - self.movement[2]))
-            self.player.render(self.display, render_scroll)
-            print(self.player.collisions)
-                    
+            self.player.render(self.display, (255,75,25),render_scroll)
+            
+            for enemy in self.enemies:
+                status = enemy.update(self.tilemap, (0,0))
+                enemy.render(self.display,(0,22,200), self.scroll)
+                
+      
+            
+            print(len(self.corpses))
 
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()),(0,0)) 
