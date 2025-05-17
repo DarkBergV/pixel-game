@@ -3,7 +3,7 @@ import sys
 #test
 from sprites import Body, Player, Enemy, Corpse
 from tilemap import Tilemap
-from utils import load_images, load_image
+from utils import load_images, load_image, Animation
 
 WIDTH = 640
 
@@ -20,25 +20,34 @@ class Main():
         self.running = True
         self.clock = pygame.time.Clock()
 
+        #game assets
+        self.assets = {'ground/ground': load_images('tiles'),
+                        'player/walk': Animation(load_images('player/player')),
+                        'player/skeleton': Animation(load_images('player/skeleton')),
+                        'player/zombie':Animation(load_images('player/zombie')),
+                        'skelly/walk': Animation(load_images('Enemy/skelly/walk')),
+                        'zombie/walk': Animation(load_images('Enemy/zombie/walk')),
+
+
+
+                      }
+
         #player
         self.movement = [0,0,0,0]
         self.scroll = [0,0]
-        self.player = Player(self,[0,0],(32,32))
+        self.player = Player(self,[0,0],(32,32), 'player')
 
-        self.enemy = Enemy(self, [200,0], (32,32), 'zombie')
-        self.enemy2 = Enemy(self, [100,0], (32,32), 'skeleton')
+        self.enemy = Enemy(self, [200,0], (32,32), 'zombie', 'walk')
+        self.enemy2 = Enemy(self, [100,0], (32,32), 'skelly', 'walk')
 
-        self.corpse = Corpse(self, [100,0], (32,32))
+       
 
         self.corpses = []
 
         self.enemies = [self.enemy, self.enemy2]
 
 
-        #game assets
-        self.assets = {'ground/ground': load_images('tiles'),
-                      }
-
+     
         self.tilemap = Tilemap(self, tilesize=32)
         self.load()
 
@@ -52,7 +61,7 @@ class Main():
         #map
        
         while self.running:
-            self.display.fill((255,255,255))
+            self.display.fill((150,150,150))
             self.tilemap.render(self.display, self.scroll)
          
 
