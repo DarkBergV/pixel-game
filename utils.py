@@ -18,17 +18,19 @@ def load_images(path):
 
 
 class Animation:
-    def __init__(self, images, img_duration = 12, loop = True):
-        self.images= images
+    def __init__(self, images, img_duration=12, loop=True):
+        self.images = images
         self.img_duration = img_duration
         self.loop = loop
-        self.done=False
+        self.done = False
         self.frame = 0
 
     def copy(self):
         return Animation(self.images, self.img_duration, self.loop)
-    
+
     def update(self):
+        
+        
         if self.loop:
             self.frame = (self.frame + 1) % (self.img_duration * len(self.images))
 
@@ -37,9 +39,13 @@ class Animation:
 
         if self.frame >= self.img_duration * len(self.images) - 1:
             self.done = True
+            
+            
 
         else:
-            self.frame +=1
+            self.frame += 1
+      
 
+        
     def img(self):
         return self.images[self.frame // self.img_duration]

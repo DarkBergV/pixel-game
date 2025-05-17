@@ -9,7 +9,8 @@ WIDTH = 640
 
 HEIGHT = 480
 
-
+PLAYER_DAMAGE_EVENT = pygame.USEREVENT + 1
+ENEMY_DAMAGE_EVENT = pygame.USEREVENT + 2
 
 class Main():
     def __init__(self):
@@ -23,11 +24,11 @@ class Main():
         #game assets
         self.assets = {'ground/ground': load_images('tiles'),
                         'player/walk': Animation(load_images('player/player')),
-                        'player/skeleton': Animation(load_images('player/skeleton')),
+                        'player/skelly': Animation(load_images('player/skeleton')),
                         'player/zombie':Animation(load_images('player/zombie')),
                         'skelly/walk': Animation(load_images('Enemy/skelly/walk')),
                         'zombie/walk': Animation(load_images('Enemy/zombie/walk')),
-
+                        'attack/right':Animation(load_images('attack/right'))
 
 
                       }
@@ -61,7 +62,7 @@ class Main():
         #map
        
         while self.running:
-            self.display.fill((150,150,150))
+            self.display.fill((155,155,155))
             self.tilemap.render(self.display, self.scroll)
          
 
@@ -69,7 +70,12 @@ class Main():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-
+                if event.type == PLAYER_DAMAGE_EVENT:
+                    self.player.can_take_damage = True
+                    pygame.time.set_timer(PLAYER_DAMAGE_EVENT,0)
+                if event.type == ENEMY_DAMAGE_EVENT:
+                    self.enemy.can_take_damage = True
+                    pygame.time.set_timer(ENEMY_DAMAGE_EVENT,0)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_a:
                         self.movement[0] = True
@@ -84,7 +90,8 @@ class Main():
                         self.movement[3] = True
 
                     if event.key == pygame.K_z:
-                        self.player.attack(self.display, self.scroll)
+                        
+                        self.player.attack()
                     
 
                 if event.type == pygame.KEYUP:
