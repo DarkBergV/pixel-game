@@ -11,13 +11,15 @@ HEIGHT = 480
 
 PLAYER_DAMAGE_EVENT = pygame.USEREVENT + 1
 ENEMY_DAMAGE_EVENT = pygame.USEREVENT + 2
+PLAYER_ATTACK_EVENT = pygame.USEREVENT + 3
+COOLDOWN = pygame.USEREVENT + 4
 
 class Main():
     def __init__(self):
         pygame.init()
         pygame.display.set_caption('dead game')
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        self.display = pygame.surface.Surface((WIDTH//2, HEIGHT//2))
+        self.display = pygame.surface.Surface((WIDTH//4, HEIGHT//4))
         self.running = True
         self.clock = pygame.time.Clock()
 
@@ -28,7 +30,11 @@ class Main():
                         'player/zombie':Animation(load_images('player/zombie')),
                         'skelly/walk': Animation(load_images('Enemy/skelly/walk')),
                         'zombie/walk': Animation(load_images('Enemy/zombie/walk')),
-                        'attack/right':Animation(load_images('attack/right'))
+                        'attack/right':Animation(load_images('attack/right')), 
+                        'attack/up':Animation(load_images('attack/up')), 
+                        'attack/down':Animation(load_images('attack/down')), 
+                        'player/rect':load_image('player\player\player1.png'),
+                        
 
 
                       }
@@ -37,6 +43,9 @@ class Main():
         self.movement = [0,0,0,0]
         self.scroll = [0,0]
         self.player = Player(self,[0,0],(32,32), 'player')
+       
+        
+        #enemies
 
         self.enemy = Enemy(self, [200,0], (32,32), 'zombie', 'walk')
         self.enemy2 = Enemy(self, [100,0], (32,32), 'skelly', 'walk')
@@ -76,36 +85,56 @@ class Main():
                 if event.type == ENEMY_DAMAGE_EVENT:
                     self.enemy.can_take_damage = True
                     pygame.time.set_timer(ENEMY_DAMAGE_EVENT,0)
+                if event.type == COOLDOWN:
+                    self.player.attack_cooldown = False
+                    pygame.time.set_timer(COOLDOWN, 0)
+                if event.type == PLAYER_ATTACK_EVENT:
+                    self.player.is_atacking = False
+                    self.player.attack_anima.done = True
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_a:
+                    if event.key == pygame.K_LEFT:
                         self.movement[0] = True
-
-                    if event.key == pygame.K_d:
+                        self.player.attack_down = False
+                        self.player.attack_up = False
+                        self.player.attack_right = True
+                    if event.key == pygame.K_RIGHT:
                         self.movement[1] = True
+                        self.player.attack_down = False
+                        self.player.attack_up = False
+                        self.player.attack_right = True
 
-                    if event.key == pygame.K_w:
+                    if event.key == pygame.K_UP:
                         self.movement[2] = True
+                        self.player.attack_up = True
+                        self.player.attack_down = False
+                        self.player.attack_right = False
 
-                    if event.key == pygame.K_s:
+                    if event.key == pygame.K_DOWN:
                         self.movement[3] = True
+                        self.player.attack_down = True
+                        self.player.attack_up = False
+                        self.player.attack_right = False
 
                     if event.key == pygame.K_z:
-                        
-                        self.player.attack()
+                        if not self.player.attack_cooldown:
+                            self.player.attack()
+                            
                     
 
                 if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_a:
+                    if event.key == pygame.K_LEFT:
                         self.movement[0] = False
                     
-                    if event.key == pygame.K_d:
+                    if event.key == pygame.K_RIGHT:
                         self.movement[1] = False
 
-                    if event.key == pygame.K_w:
+                    if event.key == pygame.K_UP:
                         self.movement[2] = False
 
-                    if event.key == pygame.K_s:
+                    if event.key == pygame.K_DOWN:
                         self.movement[3] = False
+
+                 
 
             
             #player movement
@@ -114,7 +143,7 @@ class Main():
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
 
 
-            self.player.update(self.tilemap, (self.movement[1] - self.movement[0] , self.movement[3] - self.movement[2]))
+            self.player.update(self.tilemap, (self.movement[1] - self.movement[0] , self.movement[3] - self.movement[2]), render_scroll)
             self.player.render(self.display, (255,75,25),render_scroll)
 
             if len(self.enemies)>0: 
