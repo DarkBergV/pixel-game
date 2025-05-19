@@ -49,12 +49,12 @@ class Main():
 
         self.enemy = Enemy(self, [200,0], (32,32), 'zombie', 'walk')
         self.enemy2 = Enemy(self, [100,0], (32,32), 'skelly', 'walk')
-
+        self.enemy3 = Enemy(self, [-100,0], (32,32), 'zombie', 'walk')
        
 
         self.corpses = []
 
-        self.enemies = [self.enemy, self.enemy2]
+        self.enemies = [ self.enemy2, self.enemy, self.enemy3]
 
 
      

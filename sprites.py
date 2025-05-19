@@ -223,6 +223,24 @@ class Player(Body):
             hitbox = self.hitbox()
             for enemy in enemies:
                 if hitbox.colliderect(enemy.rect()) and self.is_atacking:
+                    if self.attack_up:
+                        enemy.knock_up()
+                    if self.attack_down:
+                        enemy.knock_down()
+
+                    if self.attack_right:
+                        if self.flip:
+                            enemy.knock_left()
+                            print('left')
+
+                        if not self.flip:
+                            enemy.knock_right
+                            print('right')
+                    
+                    
+
+                    enemy.hp-=1
+                    
                     enemy.take_damage()
        
 
@@ -238,9 +256,9 @@ class Enemy(Body):
 
     def update(self, tilemap, movement, offset=(0, 0)):
         
-        print(self.hp)
+        
         super().update(tilemap, movement, offset)
-        rect = self.rect()
+        
      
         if self.hp == 0:
             return 'kill'
@@ -253,13 +271,25 @@ class Enemy(Body):
         return super().render(surf, color, offset)
     
     def take_damage(self):
+        
       
-        if self.can_take_damage:
 
-            self.hp -=1
-            pygame.time.set_timer(ENEMY_DAMAGE_EVENT, 2000)
-            self.can_take_damage = False
-            print(self.hp)
+            
+        pygame.time.set_timer(ENEMY_DAMAGE_EVENT, 200)
+        
+        print(self.hp)
+
+    def knock_up(self):
+        self.pos[1] -= 20
+
+    def knock_down(self):
+        self.pos[1] += 20
+
+    def knock_left(self):
+        self.pos[0] -= 20
+
+    def knock_right(self):
+        self.pos[0] += 20
 
 class Corpse(Body):
     def __init__(self, game, pos, size, type):
