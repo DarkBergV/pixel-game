@@ -13,6 +13,7 @@ PLAYER_DAMAGE_EVENT = pygame.USEREVENT + 1
 ENEMY_DAMAGE_EVENT = pygame.USEREVENT + 2
 PLAYER_ATTACK_EVENT = pygame.USEREVENT + 3
 COOLDOWN = pygame.USEREVENT + 4
+ENEMY_DIED_EVENT = pygame.USEREVENT + 5
 
 class Main():
     def __init__(self):
@@ -24,7 +25,7 @@ class Main():
         self.clock = pygame.time.Clock()
 
         #game assets
-        self.assets = {'ground/ground': load_images('tiles'),
+        self.assets = {'ground/ground': load_images('tiles/ground'),
                         'player/walk': Animation(load_images('player/player')),
                         'player/skelly': Animation(load_images('player/skeleton')),
                         'player/zombie':Animation(load_images('player/zombie')),
@@ -34,6 +35,8 @@ class Main():
                         'attack/up':Animation(load_images('attack/up')), 
                         'attack/down':Animation(load_images('attack/down')), 
                         'player/rect':load_image('player\player\player1.png'),
+                        'zombie/dead':Animation(load_images('Enemy/zombie/dead')),
+                        'skelly/dead':Animation(load_images('Enemy/skelly/dead'))
                         
 
 
@@ -42,19 +45,17 @@ class Main():
         #player
         self.movement = [0,0,0,0]
         self.scroll = [0,0]
-        self.player = Player(self,[0,0],(32,32), 'player')
+        self.dead = 0
+        self.hp_font = pygame.font.Font(None, size = 40)
+        
        
         
         #enemies
 
-        self.enemy = Enemy(self, [200,0], (32,32), 'zombie', 'walk')
-        self.enemy2 = Enemy(self, [100,0], (32,32), 'skelly', 'walk')
-        self.enemy3 = Enemy(self, [-100,0], (32,32), 'zombie', 'walk')
-       
+        self.remove_body = False
 
         self.corpses = []
 
-        self.enemies = [ self.enemy2, self.enemy, self.enemy3]
 
 
      
@@ -64,8 +65,26 @@ class Main():
     def load(self):
         self.tilemap.load('map.json')
         self.scene = []
+        self.enemies = []
+
         for ground in self.tilemap.extract([('ground/ground')], keep = True):
             self.scene.append(pygame.Rect(ground['pos'][0], ground['pos'][1], 32.0,32.0))
+        for spawner in self.tilemap.extract([('spawners',0), ('spawners', 1), ('spawners', 2)]):
+            if spawner['variant'] == 0:
+                self.player = Player(self,spawner['pos'],(32,32), 'player')
+            if spawner['variant'] == 1:
+                enemy2 = Enemy(self, spawner['pos'], (32,32), 'skelly', 'walk')
+                self.enemies.append(enemy2)
+            if spawner['variant'] == 2:
+                
+                enemy = Enemy(self, spawner['pos'], (32,32), 'zombie', 'walk')
+                self.enemies.append(enemy)
+
+        self.dead = 0
+
+
+            
+                
     def run(self):
 
         #map
@@ -73,8 +92,13 @@ class Main():
         while self.running:
             self.display.fill((155,155,155))
             self.tilemap.render(self.display, self.scroll)
+            hp_text = self.hp_font.render(f'hp:{self.player.hp}', True, (0,0,0))
+        
          
-
+            if self.dead:
+                self.dead+=1
+                if self.dead > 40:
+                    self.load()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -83,7 +107,7 @@ class Main():
                     self.player.can_take_damage = True
                     pygame.time.set_timer(PLAYER_DAMAGE_EVENT,0)
                 if event.type == ENEMY_DAMAGE_EVENT:
-                    self.enemy.can_take_damage = True
+                    
                     pygame.time.set_timer(ENEMY_DAMAGE_EVENT,0)
                 if event.type == COOLDOWN:
                     self.player.attack_cooldown = False
@@ -91,6 +115,7 @@ class Main():
                 if event.type == PLAYER_ATTACK_EVENT:
                     self.player.is_atacking = False
                     self.player.attack_anima.done = True
+                
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         self.movement[0] = True
@@ -118,6 +143,8 @@ class Main():
                     if event.key == pygame.K_z:
                         if not self.player.attack_cooldown:
                             self.player.attack()
+                    if event.key == pygame.K_x:
+                        self.player.player_head()
                             
                     
 
@@ -142,22 +169,24 @@ class Main():
             self.scroll[1]+= (self.player.rect().centery - self.display.get_height()/2 - self.scroll[1])
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
 
+            if not self.dead:
+                player_dies = self.player.update(self.tilemap, (self.movement[1] - self.movement[0] , self.movement[3] - self.movement[2]), render_scroll)
+                self.player.render(self.display, (255,75,25),render_scroll)
+                if player_dies:
+                    self.dead+=1
 
-            self.player.update(self.tilemap, (self.movement[1] - self.movement[0] , self.movement[3] - self.movement[2]), render_scroll)
-            self.player.render(self.display, (255,75,25),render_scroll)
 
             if len(self.enemies)>0: 
                 for enemy in self.enemies:
                     status = enemy.update(self.tilemap, (0,0))
                     enemy.render(self.display,(0,22,200), self.scroll)
 
-                    #if status == 'kill':
-                     #   self.enemies.remove(enemy)
-                
+                 
       
-  
+        
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()),(0,0)) 
+            self.screen.blit(hp_text, (50,60))
             pygame.display.update()
             self.clock.tick(60)
 

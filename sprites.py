@@ -15,6 +15,7 @@ ENEMY_DAMAGE_EVENT = pygame.USEREVENT + 2
 PLAYER_ATTACK_EVENT = pygame.USEREVENT + 3
 COOLDOWN = pygame.USEREVENT + 4
 
+
 class Body(pygame.sprite.Sprite):
     def __init__(self, game, pos, size, type):
         self.game = game
@@ -116,7 +117,7 @@ class Body(pygame.sprite.Sprite):
 class Player(Body):
     def __init__(self, game, pos, size, type):
         super().__init__(game, pos, size, type)
-        self.hp = 0
+        self.hp = 4
         self.status = 'player_head'
         self.set_action('walk')
 
@@ -135,7 +136,9 @@ class Player(Body):
         
     def player_rect(self):
         return pygame.rect.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
-    
+    def player_head(self):
+        self.status = 'player_head'
+        self.set_action('walk')
     def attack_animation(self, attack_direction):
         
         if self.attack_direction != attack_direction:
@@ -148,7 +151,7 @@ class Player(Body):
         for enemy in self.game.enemies:
             if player_rect.colliderect(enemy.rect()):
                
-                if self.can_take_damage:
+                if self.can_take_damage and not enemy.status == 'corpse':
                     self.hp -=1
 
                     pygame.time.set_timer(PLAYER_DAMAGE_EVENT, 5000)
@@ -156,7 +159,7 @@ class Player(Body):
                     self.can_take_damage = False
                     
 
-                if enemy.status =='corpse':
+                if enemy.status =='corpse' and self.status == 'player_head':
                    
       
                     self.set_action(enemy.type)
@@ -177,6 +180,8 @@ class Player(Body):
         if self.attack_right:
             self.attack_animation('right')
         
+        if self.hp <= 0:
+            return True
             
         self.attack_anima.update()
         
@@ -248,19 +253,35 @@ class Enemy(Body):
     def __init__(self, game, pos, size, type, action):
         super().__init__(game, pos, size, type)
         self.hp = 5
-        self.status = 'corpse'
+        self.status = 'walk'
         self.type = type
         self.set_action(action)
         self.can_take_damage = True
-        
+        self.detect_player = False
+    
+    def player_detect(self):
+        return pygame.rect.Rect(self.pos[0], self.pos[1], 100,100)
 
     def update(self, tilemap, movement, offset=(0, 0)):
         
         
         super().update(tilemap, movement, offset)
+        player_rect = self.game.player.rect()
+        detect = self.player_detect()
         
-     
+        dis = (self.game.player.pos[0]-self.pos[0],self.game.player.pos[1]-self.pos[1])
+        move_dis = (dis[0]**2 + dis[1]**2) ** 0.5
+
+        if detect.colliderect(player_rect) and self.hp > 0:
+            self.detect_player = True
+
+
+        if self.detect_player and self.hp > 0:
+            if move_dis != 0:
+                    self.pos[0]+= dis[0]// move_dis
+                    self.pos[1]+=dis[1]//move_dis
         if self.hp == 0:
+            
             return 'kill'
     
         
@@ -268,6 +289,7 @@ class Enemy(Body):
         if self.hp <=0:
             self.status = 'corpse'
             color = [0,0,0]
+            self.set_action('dead')
         return super().render(surf, color, offset)
     
     def take_damage(self):
@@ -280,16 +302,20 @@ class Enemy(Body):
         print(self.hp)
 
     def knock_up(self):
-        self.pos[1] -= 20
+        if not self.collisions['up']:
+            self.pos[1] -= 20
 
     def knock_down(self):
-        self.pos[1] += 20
+        if not self.collisions['down']:
+            self.pos[1] += 20
 
     def knock_left(self):
-        self.pos[0] -= 20
+        if not self.collisions['left']:
+            self.pos[0] -= 20
 
     def knock_right(self):
-        self.pos[0] += 20
+        if not self.collisions['right']:
+            self.pos[0] += 20
 
 class Corpse(Body):
     def __init__(self, game, pos, size, type):

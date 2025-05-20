@@ -21,7 +21,8 @@ class Editor:
         
         self.clock = pygame.time.Clock()
 
-        self.assets = {'ground/ground': load_images('tiles'),
+        self.assets = {'ground/ground': load_images('tiles/ground'),
+                       'spawners':load_images('tiles/spawners')
                       }
 
         self.tilemap = Tilemap(self, 32)
@@ -114,20 +115,21 @@ class Editor:
                         
                         self.right_clicking = True
 
+                if event.type == pygame.KEYDOWN:
                     if self.shift:
-                        if event.button == 4:
+                        if event.key == pygame.K_k:
                             
                             self.tile_variant = (self.tile_variant + 1 ) % len(self.assets[self.tile_list[self.tile_group]])
                             
-                        if event.button == 5:
+                        if event.key == pygame.K_l:
                             
                             self.tile_variant = (self.tile_variant - 1 ) % len(self.assets[self.tile_list[self.tile_group]])
                     else:
-                        if event.button == 4:
+                        if event.key == pygame.K_k:
                            
                             self.tile_group = (self.tile_group + 1) % len(self.assets)  
                             
-                        if event.button == 5:
+                        if event.key == pygame.K_l:
                             self.tile_group = (self.tile_group - 1)% len(self.assets)
                             
 
